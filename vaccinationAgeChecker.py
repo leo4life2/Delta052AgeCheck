@@ -146,7 +146,8 @@ class ShotType:
         '乙脑',
         '甲肝',
         '乙肝',
-        '流脑'
+        '流脑',
+        '麻腮风'
     ]
 
     str_to_type = {
@@ -162,7 +163,8 @@ class ShotType:
         '乙脑': JapEnceph,
         '甲肝': HepaA,
         '乙肝': HepaB,
-        '流脑': Meningitis
+        '流脑': Meningitis,
+        '麻腮风': Measles
     }
 
 
