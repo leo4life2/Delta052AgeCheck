@@ -93,10 +93,10 @@ class ShotType:
         min_age = [0, 6, 0]
 
         age_upper_bounds = [
-            [10, 0, 0],
-            [10, 0, 0],
-            [10, 0, 0],
-            [10, 0, 0]
+            [99, 0, 0],
+            [99, 0, 0],
+            [99, 0, 0],
+            [99, 0, 0]
         ]
 
     class HepaA:
@@ -147,7 +147,8 @@ class ShotType:
         '甲肝',
         '乙肝',
         '流脑',
-        '麻腮风'
+        '麻腮风',
+	'灰苗'
     ]
 
     str_to_type = {
@@ -155,6 +156,7 @@ class ShotType:
         'HPV九价': HPV9,
         '13价': Prev13,
         '5联': Five_Vacc,
+	'灰苗': Five_Vacc,
         '小儿流感': Infant_Flu,
         '成人流感': Adult_Flu,
         '五价轮状': Rotavirus,
