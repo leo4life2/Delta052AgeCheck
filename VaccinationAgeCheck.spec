@@ -2,7 +2,6 @@
 
 block_cipher = None
 
-
 a = Analysis(['VaccinationAgeCheck.py'],
              pathex=['C:\\Users\\leo4l\\Desktop\\Delta052AgeCheck'],
              binaries=[],
