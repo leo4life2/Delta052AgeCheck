@@ -4,184 +4,81 @@ from tkinter import *
 import tkinter.filedialog
 import numpy as np
 
-class ShotType:
-    strict_margin = 7
-    # In Days
-    # Boundaries are *inclusive*
-    # Bounds in format [Year, Month, Day]. Year, month and days will be summed.
-    class HPV9:
-        min_age = [16, 0, 0] # So age has to be larger than 15Y
-
-        age_upper_bounds = [
-            [26, 8, 0], # so age has to be smaller than 26Y+9M
-            [26, 9, 0], # so age has to be smaller than 26Y+10M
-            [26, 0, 0]  # so age has to be smaller than 27Y
-        ]
-
-    class HPV4:
-        min_age = [20, 0, 0]
-
-        age_upper_bounds = [
-            [45, 6, 0],
-            [45, 8, 0],
-            [45, 0, 0]
-        ]
-
-    class Prev13:
-        min_age = [0, 0, 6 * 7]
-
-        age_upper_bounds = [
-            [0, 6, 0],
-            [0, 6, 0],
-            [0, 6, 0],
-            [1, 3, 0]
-        ]
-
-        reinforcement_minage = [1, 0, 0]
-
-    class Five_Vacc:
-        min_age = [0, 2, 0]
-
-        age_upper_bounds = [
-            [5, 0, 0],
-            [5, 0, 0],
-            [5, 0, 0],
-            [5, 0, 0]
-        ]
-
-    class Infant_Flu:
-        min_age = [0, 6, 0]
-
-        age_upper_bounds = [
-            [3, 0, 0], # Upper bound is 35 months, which is equivalent to <3 years.
-            [3, 0, 0] # ! 科兴 one's upper limit is 3 Years--not sure if it means 3岁 or <3 years. !
-        ]
-
-    class Adult_Flu:
-        min_age = [3, 0, 0]
-
-        age_upper_bounds = [
-            [99, 0, 0]
-        ]
-
-    class Rotavirus:
-        min_age = [0, 0, 6 * 7]
-
-        age_upper_bounds = [
-            [2, 8, 0],
-            [2, 8, 0],
-            [2, 8, 0]
-        ]
-
-    class Chickenpox:
-        min_age = [1, 0, 0]
-
-        age_upper_bounds = [
-            [99, 0, 0],
-            [99, 0, 0],
-            [99, 0, 0]
-        ]
-
-    class HandFootMouth:
-        min_age = [0, 6, 0]
-
-        age_upper_bounds = [
-            [5, 0, 0]
-        ]
-
-    class JapEnceph:
-        min_age = [0, 6, 0]
-
-        age_upper_bounds = [
-            [10, 0, 0],
-            [10, 0, 0],
-            [10, 0, 0],
-            [10, 0, 0]
-        ]
-
-    class HepaA:
-        min_age = [0, 12, 0]
-
-        age_upper_bounds = [
-            [17, 0, 0],
-            [17, 0, 0],
-            [17, 0, 0]
-        ]
-
-    class HepaB:
-        min_age = [0, 0, 0]
-
-        age_upper_bounds = [
-            [99, 0, 0],
-            [99, 0, 0],
-            [99, 0, 0]
-        ]
-
-    class Meningitis:
-        min_age = [0, 6, 0]
-
-        age_upper_bounds = [
-            [15, 0, 0],
-            [15, 0, 0]
-        ]
-
-    class Measles:
-        min_age = [0, 8, 0]
-
-        age_upper_bounds = [
-            [99, 0, 0],
-            [99, 0, 0]
-        ]
-
-    name_strs = [
-        'HPV四价',
-        'HPV九价',
-        '13价',
-        '5联',
-        '小儿流感',
-        '成人流感',
-        '五价轮状',
-        '水痘',
-        '手足口',
-        '乙脑',
-        '甲肝',
-        '乙肝',
-        '流脑',
-        '麻腮风'
-    ]
-
-    str_to_type = {
-        'HPV四价': HPV4,
-        'HPV九价': HPV9,
-        '13价': Prev13,
-        '5联': Five_Vacc,
-        '小儿流感': Infant_Flu,
-        '成人流感': Adult_Flu,
-        '五价轮状': Rotavirus,
-        '水痘': Chickenpox,
-        '手足口': HandFootMouth,
-        '乙脑': JapEnceph,
-        '甲肝': HepaA,
-        '乙肝': HepaB,
-        '流脑': Meningitis,
-        '麻腮风': Measles
-    }
-
-
-def get_sheet():
-    filepath = tkinter.filedialog.askopenfilename()
+def get_sheet(filepath = None):
+    if not filepath:
+        filepath = tkinter.filedialog.askopenfilename()
     sheet = pd.read_excel(filepath, na_filter = False)
     sheet_np = sheet.to_numpy()
     return filepath, sheet_np
+
+path, bounds_sheet = get_sheet(filepath = 'bounds.xlsx')
+
+class Shot:
+    all_shots = []
+    name_strs = []
+    def __init__(self, name, minage, maxages, specialminage, specialminage_shotnum):
+        self.name = name
+        self.minage = minage
+        self.maxages = maxages
+        self.specialminage = specialminage
+        self.specialminage_shotnum = specialminage_shotnum
+        
+    @classmethod
+    def init_all_shot_bounds(cls, bounds_sheet):
+    
+        shots = []
+        names = []
+
+        for row in bounds_sheet:
+            def list_str_to_list_int(list_str):
+                lst = list_str.replace('[', '').replace(']', '').replace(' ', '').split(',')
+                if lst == ['']:
+                    return None
+                lst = [int(s) for s in lst]
+                return lst
+            def process_specialminage(specialminage_str):
+                shotnum = int(specialminage_str[0])
+                stuffafter = specialminage_str[1:]
+                stuffafter = stuffafter.replace(':', '').replace(' ', '')
+                minage = list_str_to_list_int(stuffafter)
+                return shotnum, minage
+            '''
+            ix: content
+            0: vaccine name
+            1: min age
+            2: # shots
+            3: shot 1 max age
+            4: shot 2 max age
+            5: shot 3 max age
+            6: shot 4 max age
+            7: special shot min age
+            '''
+            name, minage_str, nshots_str, maxages_str, specialminage_str = row[0], row[1], row[2], row[3:7], row[7]
+            minage = list_str_to_list_int(minage_str)
+            nshots = int(nshots_str)
+            maxages = [list_str_to_list_int(maxage_str) for maxage_str in maxages_str]
+            specialshotnum = None
+            specialminage = None
+            
+            if specialminage_str != '':
+                specialshotnum, specialminage = process_specialminage(specialminage_str)
+                
+            shots.append(Shot(name, minage, maxages, specialminage, specialshotnum))
+            names.append(name)
+
+        cls.all_shots = shots
+        cls.name_strs = names
+
+Shot.init_all_shot_bounds(bounds_sheet)
 
 def get_parameters(shot_date_raw, bday_raw, product_type, additional_info, shot_description):
     '''
     Returns encoded shot_date, bday & shotnum
     '''
-    def get_shot_type(product_description):
-        for shot_str in ShotType.name_strs:
-            if shot_str in product_description:
-                return ShotType.str_to_type[shot_str]
+    def get_shot(product_description):
+        for shot in Shot.all_shots:
+            if shot.name in product_description:
+                return shot
 
     def get_shot_num(product_str, additional_info):
         if '第一针' in product_str + additional_info or '单针' in product_str + additional_info:
@@ -199,11 +96,11 @@ def get_parameters(shot_date_raw, bday_raw, product_type, additional_info, shot_
     shot_date = datetime.strptime(shot_date_raw, '%Y-%m-%d')
     bday = datetime.strptime(bday_raw, '%Y/%m/%d')
     shot_num = get_shot_num(product_type, additional_info)
-    shot_type = get_shot_type(shot_description)
+    shot = get_shot(shot_description)
 
-    return shot_date, bday, shot_num, shot_type
+    return shot_date, bday, shot_num, shot
 
-def check_shot_age(shottype, shotnum, shot_date, bday):
+def check_shot_age(shot, shotnum, shot_date, bday):
 
     def get_limit_date(bday, limit, upper = False, lower = False):
         if lower:
@@ -228,12 +125,12 @@ def check_shot_age(shottype, shotnum, shot_date, bday):
 
     # Shot type is never None.
     # Kinda gambling here, betting that noone's gonna make a mistake and cause index out of bound error.
-    upperlimit = shottype.age_upper_bounds[shotnum-1]
-    lowerlimit = shottype.min_age
+    upperlimit = shot.maxages[shotnum-1]
+    lowerlimit = shot.minage
 
-    # Prev13 special case. Has different min age for 4th shot.
-    if shotnum == 4 and shottype is ShotType.Prev13:
-        lowerlimit = shottype.reinforcement_minage
+    # i.e. Prev13 special case. Has different min age for 4th shot.
+    if shot.specialminage and shotnum == shot.specialminage_shotnum:
+        lowerlimit = shot.specialminage
 
     # Check lower boundaries first
     if not does_satisfy_age_limit(shot_date, bday, lowerlimit, check_lowerbound = True):
@@ -272,9 +169,9 @@ def check_sheet_vacc_ages(sheet):
             product_type = row[17]
             additional_info = row[16]
 
-            shot_date, bday, shot_num, shot_type = get_parameters(shot_date_raw, bday_raw, product_type, additional_info, product)
+            shot_date, bday, shot_num, shot = get_parameters(shot_date_raw, bday_raw, product_type, additional_info, product)
 
-            if shot_type is None:
+            if shot is None:
                 if product not in ['',' ', '  ', '\n', '\r']:
                     unknown_types.append(product)
                 continue
@@ -284,17 +181,18 @@ def check_sheet_vacc_ages(sheet):
             row_str = 'Excel第' + str(i) + '行，姓名：' + name + '，预约时间：' + shot_date_raw + '，类型：' + product + '，第' + str(shot_num) + '针 ' + '，出生日期：' + bday_raw
 
             try:
-                check_result = check_shot_age(shot_type, shot_num, shot_date, bday)
+                check_result = check_shot_age(shot, shot_num, shot_date, bday)
             except:
                 print(row)
             if check_result != '通过':
                 errors += (row_str + '\n' + check_result + '\n')
 
     unknown_types = set(unknown_types)
-    to_display += '发现了未知的套餐类型：' + '\n\n'
-    for uktype in unknown_types:
-        to_display += str(uktype) + '\n'
-    to_display += '\n'
+    if len(unknown_types) > 0:
+        to_display += '发现了未知的套餐类型：' + '\n\n'
+        for uktype in unknown_types:
+            to_display += str(uktype) + '\n'
+        to_display += '\n'
 
     if errors == '':
         to_display += '年龄检查全部通过'
@@ -304,16 +202,12 @@ def check_sheet_vacc_ages(sheet):
 
     return to_display
 
-window = Tk()
-window.title("自动检查疫苗年龄要求程序:D")
-window.geometry('800x500')
-
-path, np_sheet = None, None
 def choose_file():
     global path
     global np_sheet
     path, np_sheet = get_sheet()
     lbl.configure(text='目前文件: '+ path)
+
 def analyze():
     txt['state'] = 'normal'
     txt.delete(1.0, END)
@@ -321,12 +215,17 @@ def analyze():
         return
     results = check_sheet_vacc_ages(np_sheet)
     txt.insert(1.0, results)
-#     txt['state'] = 'disabled'
+
+window = Tk()
+window.title("自动检查疫苗年龄要求程序:D")
+window.geometry('800x500')
+
+path, np_sheet = None, None
 
 lbl = Label(window, text="请先选择一个文件", anchor = 'center', wraplength = 300, font = ('Songti SC', 15))
 lbl.grid(column = 0, row = 0)
 
-choosebtn = Button(window, text="选择文件", command=choose_file)
+choosebtn = Button(window, text="选择文件", command = choose_file)
 choosebtn.grid(column = 0, row = 1)
 
 analyzebtn = Button(window, text='开始检查', command = analyze)
@@ -346,3 +245,5 @@ txt.grid_propagate(False)
 txt.config(font = ('Songti SC', 15))
 
 window.mainloop()
+
+
