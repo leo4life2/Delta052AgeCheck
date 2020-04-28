@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['vaccinationagechecker.py'],
+a = Analysis(['vaccinationAgChecker'],
              pathex=['C:\\Users\\leo4l\\Desktop\\Delta052AgeCheck'],
              binaries=[],
              datas=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='vaccinationagechecker',
+          name='vaccinationAgChecker',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -34,4 +34,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='vaccinationagechecker')
+               name='vaccinationAgChecker')
