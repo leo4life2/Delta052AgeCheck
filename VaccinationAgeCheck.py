@@ -1,8 +1,21 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import os
 import pandas as pd
 from datetime import date, datetime
 from tkinter import *
 import tkinter.filedialog
 import numpy as np
+
+
+# # Get bounds Excel sheet
+
+# In[2]:
+
 
 def get_sheet(filepath = None):
     if not filepath:
@@ -11,7 +24,32 @@ def get_sheet(filepath = None):
     sheet_np = sheet.to_numpy()
     return filepath, sheet_np
 
-path, bounds_sheet = get_sheet(filepath = 'bounds.xlsx')
+
+# In[3]:
+
+
+if getattr(sys, 'frozen', False):
+    # if you are running in a |PyInstaller| bundle
+    extDataDir = sys._MEIPASS
+    extDataDir = os.path.join(extDataDir, 'bounds.xlsx') 
+    #you should use extDataDir as the path to your file Store_Codes.csv file
+else:
+    # we are running in a normal Python environment
+    extDataDir = os.getcwd()
+    extDataDir = os.path.join(extDataDir, 'bounds.xlsx') 
+    #you should use extDataDir as the path to your file Store_Codes.csv file
+
+
+# In[4]:
+
+
+path, bounds_sheet = get_sheet(filepath = extDataDir)
+
+
+# # Setup vaccine shot related data structures & methods
+
+# In[5]:
+
 
 class Shot:
     all_shots = []
@@ -69,7 +107,17 @@ class Shot:
         cls.all_shots = shots
         cls.name_strs = names
 
+
+# In[6]:
+
+
 Shot.init_all_shot_bounds(bounds_sheet)
+
+
+# # Functions for age checking
+
+# In[7]:
+
 
 def get_parameters(shot_date_raw, bday_raw, product_type, additional_info, shot_description):
     '''
@@ -202,6 +250,12 @@ def check_sheet_vacc_ages(sheet):
 
     return to_display
 
+
+# # UI Related Stuff
+
+# In[9]:
+
+
 def choose_file():
     global path
     global np_sheet
@@ -245,5 +299,10 @@ txt.grid_propagate(False)
 txt.config(font = ('Songti SC', 15))
 
 window.mainloop()
+
+
+# In[ ]:
+
+
 
 
